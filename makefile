@@ -1,6 +1,6 @@
 all :
 
-init:
+__:
 	lux-ai-2021 main.js main.js --out=replay.json
 
 run:
