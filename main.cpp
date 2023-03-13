@@ -62,6 +62,23 @@ CityTile *GetClosestCityTile(Unit unit, City city)
   return closestCityTile;
 }
 
+bool ShouldBuildCity(Unit unit)
+{
+  if ((unit.cargo.wood + unit.cargo.coal + unit.cargo.uranium) >= GAME_CONSTANTS["PARAMETERS"]["CITY_BUILD_COST"])
+    return true;
+  else
+    return false;
+}
+
+bool IsNextToCityTile(Unit unit, CityTile cityTile)
+{
+  return unit.pos.distanceTo(cityTile.pos) == 1;
+}
+
+// # # # # # # # # # # # # # # # # # # # #
+// Game functions please code above me =)
+// # # # # # # # # # # # # # # # # # # # #
+
 void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 {
 
@@ -92,7 +109,6 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
       }
       else
       {
-        // if unit is a worker and there is no cargo space left, and we have cities, lets return to them
         if (player.cities.size() > 0)
         {
           auto city_iter = player.cities.begin();
@@ -100,11 +116,28 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 
           CityTile *closestCityTile;
           closestCityTile = GetClosestCityTile(unit, city);
-
           if (closestCityTile != nullptr)
           {
-            auto dir = unit.pos.directionTo(closestCityTile->pos);
-            actions.push_back(unit.move(dir));
+            if (i == 0 && ShouldBuildCity(unit))
+            {
+              actions.push_back(Annotate::sidetext(unit.pos.distanceTo(closestCityTile->pos) == 1 ? "true" : "false"));
+              if (unit.pos.distanceTo(closestCityTile->pos) == 1 && unit.canBuild(gameMap))
+              {
+                unit.buildCity();
+              }
+              else
+              {
+                // move to city
+                auto dir = unit.pos.directionTo(closestCityTile->pos);
+                actions.push_back(unit.move(dir));
+              }
+            }
+            else
+            {
+
+              auto dir = unit.pos.directionTo(closestCityTile->pos);
+              actions.push_back(unit.move(dir));
+            }
           }
         }
       }
@@ -121,6 +154,8 @@ void ActOnNight(kit::Agent &gameState, vector<string> &actions)
 {
   ActOnDay(gameState, actions);
 }
+
+// # # # # # # # # # # # # # # # # # # # # # # #
 
 int main()
 {
