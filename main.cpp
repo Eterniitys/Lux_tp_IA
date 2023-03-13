@@ -62,6 +62,66 @@ CityTile *GetClosestCityTile(Unit unit, City city)
   return closestCityTile;
 }
 
+void ActOnDay(kit::Agent &gameState, vector<string> &actions)
+{
+
+  Player &player = gameState.players[gameState.id];
+  Player &opponent = gameState.players[(gameState.id + 1) % 2];
+
+  GameMap &gameMap = gameState.map;
+
+  vector<Cell *> resourceTiles = vector<Cell *>();
+  resourceTiles = GetResourceTiles(gameMap);
+
+  for (int i = 0; i < player.units.size(); i++)
+  {
+    Unit unit = player.units[i];
+    if (unit.isWorker() && unit.canAct())
+    {
+      if (unit.getCargoSpaceLeft() > 0)
+      {
+        // if the unit is a worker and we have space in cargo, lets find the nearest resource tile and try to mine it
+        Cell *closestResourceTile;
+        closestResourceTile = GetClosestResource(unit, resourceTiles, player);
+
+        if (closestResourceTile != nullptr)
+        {
+          auto dir = unit.pos.directionTo(closestResourceTile->pos);
+          actions.push_back(unit.move(dir));
+        }
+      }
+      else
+      {
+        // if unit is a worker and there is no cargo space left, and we have cities, lets return to them
+        if (player.cities.size() > 0)
+        {
+          auto city_iter = player.cities.begin();
+          auto &city = city_iter->second;
+
+          CityTile *closestCityTile;
+          closestCityTile = GetClosestCityTile(unit, city);
+
+          if (closestCityTile != nullptr)
+          {
+            auto dir = unit.pos.directionTo(closestCityTile->pos);
+            actions.push_back(unit.move(dir));
+          }
+        }
+      }
+    }
+  }
+}
+
+void ActOnDawn(kit::Agent &gameState, vector<string> &actions)
+{
+  ActOnDay(gameState, actions);
+}
+
+void ActOnNight(kit::Agent &gameState, vector<string> &actions)
+{
+  ActOnDay(gameState, actions);
+}
+
 int main()
 {
   kit::Agent gameState = kit::Agent();
@@ -78,51 +138,25 @@ int main()
 
     /** AI Code Goes Below! **/
 
-    Player &player = gameState.players[gameState.id];
-    Player &opponent = gameState.players[(gameState.id + 1) % 2];
+    // Player &player = gameState.players[gameState.id];
+    // Player &opponent = gameState.players[(gameState.id + 1) % 2];
 
-    GameMap &gameMap = gameState.map;
+    // GameMap &gameMap = gameState.map;
 
-    vector<Cell *> resourceTiles = vector<Cell *>();
-    resourceTiles = GetResourceTiles(gameMap);
+    // vector<Cell *> resourceTiles = vector<Cell *>();
+    // resourceTiles = GetResourceTiles(gameMap);
 
-    // we iterate over all our units and do something with them
-    for (int i = 0; i < player.units.size(); i++)
+    if (gameState.turn % 40 <= 25)
     {
-      Unit unit = player.units[i];
-      if (unit.isWorker() && unit.canAct())
-      {
-        if (unit.getCargoSpaceLeft() > 0)
-        {
-          // if the unit is a worker and we have space in cargo, lets find the nearest resource tile and try to mine it
-          Cell *closestResourceTile;
-          closestResourceTile = GetClosestResource(unit, resourceTiles, player);
-
-          if (closestResourceTile != nullptr)
-          {
-            auto dir = unit.pos.directionTo(closestResourceTile->pos);
-            actions.push_back(unit.move(dir));
-          }
-        }
-        else
-        {
-          // if unit is a worker and there is no cargo space left, and we have cities, lets return to them
-          if (player.cities.size() > 0)
-          {
-            auto city_iter = player.cities.begin();
-            auto &city = city_iter->second;
-
-            CityTile *closestCityTile;
-            closestCityTile = GetClosestCityTile(unit, city);
-
-            if (closestCityTile != nullptr)
-            {
-              auto dir = unit.pos.directionTo(closestCityTile->pos);
-              actions.push_back(unit.move(dir));
-            }
-          }
-        }
-      }
+      ActOnDay(gameState, actions);
+    }
+    else if (gameState.turn % 40 < 30)
+    {
+      ActOnDawn(gameState, actions);
+    }
+    else
+    {
+      ActOnNight(gameState, actions);
     }
 
     // you can add debug annotations using the methods of the Annotate class.
