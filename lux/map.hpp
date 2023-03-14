@@ -12,7 +12,8 @@ namespace lux
     {
         wood = 'w',
         coal = 'c',
-        uranium = 'u'
+        uranium = 'u',
+        any = 'a'
     };
 
     class Resource

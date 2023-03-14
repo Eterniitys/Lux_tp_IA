@@ -32,13 +32,15 @@ vector<Cell *> GetResourceTiles(GameMap gameMap)
   return resourceTiles;
 }
 
-Cell *GetClosestResource(Unit unit, vector<Cell *> resourceTiles, Player player)
+Cell *GetClosestResource(Unit unit, vector<Cell *> resourceTiles, Player player, ResourceType type = ResourceType::any)
 {
   Cell *closestResourceTile;
   float closestDist = 9999999;
   for (auto it = resourceTiles.begin(); it != resourceTiles.end(); it++)
   {
     auto cell = *it;
+    if (type != ResourceType::any && cell->resource.type != type)
+      continue;
     if (cell->resource.type == ResourceType::coal && !player.researchedCoal())
       continue;
     if (cell->resource.type == ResourceType::uranium && !player.researchedUranium())
@@ -82,13 +84,56 @@ bool IsNextToCityTile(Unit unit, CityTile cityTile)
   return unit.pos.distanceTo(cityTile.pos) == 1;
 }
 
+Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextToCityTile = false)
+{
+  Cell *closestEmptyTile;
+  float closestDist = 9999999;
+
+  for (int y = 0; y < gameMap.height; y++)
+  {
+    for (int x = 0; x < gameMap.width; x++)
+    {
+      Cell *cell = gameMap.getCell(x, y);
+      if (cell->hasResource())
+      {
+        continue;
+      }
+      if (nextToCityTile)
+      {
+        map<string, City>::iterator it;
+        for (it = player.cities.begin(); it != player.cities.end(); it++)
+        {
+          for (int i = 0; i < it->second.citytiles.size(); i++)
+          {
+            float dist = cell->pos.distanceTo(it->second.citytiles[i].pos);
+            if (dist < closestDist)
+            {
+              closestDist = dist;
+              closestEmptyTile = cell;
+            }
+          }
+        }
+      }
+      else
+      {
+        float dist = cell->pos.distanceTo(unit.pos);
+        if (dist < closestDist)
+        {
+          closestDist = dist;
+          closestEmptyTile = cell;
+        }
+      }
+    }
+  }
+  return closestEmptyTile;
+}
+
 // # # # # # # # # # # # # # # # # # # # #
 // Game functions please code above me =)
 // # # # # # # # # # # # # # # # # # # # #
 
 void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 {
-
   Player &player = gameState.players[gameState.id];
   Player &opponent = gameState.players[(gameState.id + 1) % 2];
 
@@ -97,9 +142,24 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
   vector<Cell *> resourceTiles = vector<Cell *>();
   resourceTiles = GetResourceTiles(gameMap);
 
+  map<string, City>::iterator it;
+  for (it = player.cities.begin(); it != player.cities.end(); it++)
+  {
+    for (int i = 0; i < it->second.citytiles.size(); i++)
+    {
+      if (it->second.citytiles[i].canAct())
+      {
+        if (it->second.citytiles.size() < player.units.size())
+          actions.push_back(it->second.citytiles[i].research());
+        else
+          actions.push_back(it->second.citytiles[i].buildWorker());
+      }
+    }
+  }
+
   for (int i = 0; i < player.units.size(); i++)
   {
-    WriteLog("going through unit " + i);
+    // WriteLog("going through unit " + i);
     Unit unit = player.units[i];
     if (unit.isWorker() && unit.canAct())
     {
@@ -107,7 +167,10 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
       {
         // if the unit is a worker and we have space in cargo, lets find the nearest resource tile and try to mine it
         Cell *closestResourceTile;
-        closestResourceTile = GetClosestResource(unit, resourceTiles, player);
+        if (player.researchedCoal())
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::coal);
+        else
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player);
 
         if (closestResourceTile != nullptr)
         {
@@ -126,26 +189,26 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           closestCityTile = GetClosestCityTile(unit, city);
           if (closestCityTile != nullptr)
           {
-            // if (i == 0 && ShouldBuildCity(unit))
-            // {
-            // actions.push_back(Annotate::sidetext(unit.pos.distanceTo(closestCityTile->pos) == 1 ? "true" : "false"));
-            // if (unit.pos.distanceTo(closestCityTile->pos) == 1 && unit.canBuild(gameMap))
-            // {
-            //   unit.buildCity();
-            // }
-            // else
-            // {
-            // move to city
-            // auto dir = unit.pos.directionTo(closestCityTile->pos);
-            // actions.push_back(unit.move(dir));
-            // }
-            // }
-            // else
-            // {
+            if (i == 0 && ShouldBuildCity(unit) && city.fuel > 500)
+            {
+              if (unit.canBuild(gameMap))
+              {
+                actions.push_back(unit.buildCity());
+              }
+              else
+              {
+                Cell *buildLocation = GetClosestEmptyTile(gameMap, unit, player);
+                // move to city
+                auto dir = unit.pos.directionTo(buildLocation->pos);
+                actions.push_back(unit.move(dir));
+              }
+            }
+            else
+            {
 
-            auto dir = unit.pos.directionTo(closestCityTile->pos);
-            actions.push_back(unit.move(dir));
-            // }
+              auto dir = unit.pos.directionTo(closestCityTile->pos);
+              actions.push_back(unit.move(dir));
+            }
           }
         }
       }
