@@ -8,6 +8,16 @@
 using namespace std;
 using namespace lux;
 
+void WriteLog(string log, bool concat = true)
+{
+  {
+
+    FILE *pFile = fopen("logFile.txt", "a");
+    fprintf(pFile, "%s\n", log);
+    fclose(pFile);
+  }
+}
+
 vector<Cell *> GetResourceTiles(GameMap gameMap)
 {
   vector<Cell *> resourceTiles = vector<Cell *>();
@@ -92,6 +102,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 
   for (int i = 0; i < player.units.size(); i++)
   {
+    WriteLog("going through unit " + i);
     Unit unit = player.units[i];
     if (unit.isWorker() && unit.canAct())
     {
@@ -118,26 +129,26 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           closestCityTile = GetClosestCityTile(unit, city);
           if (closestCityTile != nullptr)
           {
-            if (i == 0 && ShouldBuildCity(unit))
-            {
-              actions.push_back(Annotate::sidetext(unit.pos.distanceTo(closestCityTile->pos) == 1 ? "true" : "false"));
-              if (unit.pos.distanceTo(closestCityTile->pos) == 1 && unit.canBuild(gameMap))
-              {
-                unit.buildCity();
-              }
-              else
-              {
-                // move to city
-                auto dir = unit.pos.directionTo(closestCityTile->pos);
-                actions.push_back(unit.move(dir));
-              }
-            }
-            else
-            {
+            // if (i == 0 && ShouldBuildCity(unit))
+            // {
+            // actions.push_back(Annotate::sidetext(unit.pos.distanceTo(closestCityTile->pos) == 1 ? "true" : "false"));
+            // if (unit.pos.distanceTo(closestCityTile->pos) == 1 && unit.canBuild(gameMap))
+            // {
+            //   unit.buildCity();
+            // }
+            // else
+            // {
+            // move to city
+            // auto dir = unit.pos.directionTo(closestCityTile->pos);
+            // actions.push_back(unit.move(dir));
+            // }
+            // }
+            // else
+            // {
 
-              auto dir = unit.pos.directionTo(closestCityTile->pos);
-              actions.push_back(unit.move(dir));
-            }
+            auto dir = unit.pos.directionTo(closestCityTile->pos);
+            actions.push_back(unit.move(dir));
+            // }
           }
         }
       }
@@ -172,14 +183,6 @@ int main()
     vector<string> actions = vector<string>();
 
     /** AI Code Goes Below! **/
-
-    // Player &player = gameState.players[gameState.id];
-    // Player &opponent = gameState.players[(gameState.id + 1) % 2];
-
-    // GameMap &gameMap = gameState.map;
-
-    // vector<Cell *> resourceTiles = vector<Cell *>();
-    // resourceTiles = GetResourceTiles(gameMap);
 
     if (gameState.turn % 40 <= 25)
     {
