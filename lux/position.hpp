@@ -61,15 +61,37 @@ namespace lux
         }
 
         /** Returns closest direction to targetPos, or center if staying put is best */
-        DIRECTIONS directionTo(const Position &targetPos) const
+        // DIRECTIONS directionTo(const Position &targetPos) const
+        // {
+
+        //     DIRECTIONS closestDirection = DIRECTIONS::CENTER;
+        //     float closestDist = distanceTo(targetPos);
+        //     for (const DIRECTIONS dir : ALL_DIRECTIONS)
+        //     {
+        //         const Position newpos = translate(dir, 1);
+        //         float dist = targetPos.distanceTo(newpos);
+        //         if (dist < closestDist)
+        //         {
+        //             closestDist = dist;
+        //             closestDirection = dir;
+        //         }
+        //     }
+        //     return closestDirection;
+        // }
+
+        DIRECTIONS directionTo(const Position &targetPos, vector<Position> toAvoid = {}) const
         {
 
             DIRECTIONS closestDirection = DIRECTIONS::CENTER;
             float closestDist = distanceTo(targetPos);
             for (const DIRECTIONS dir : ALL_DIRECTIONS)
             {
-                const Position newpos = translate(dir, 1);
-                float dist = targetPos.distanceTo(newpos);
+                const Position newPos = translate(dir, 1);
+                bool found = find(toAvoid.begin(), toAvoid.end(), newPos) != toAvoid.end();
+                if (found)
+                    continue;
+
+                float dist = targetPos.distanceTo(newPos);
                 if (dist < closestDist)
                 {
                     closestDist = dist;

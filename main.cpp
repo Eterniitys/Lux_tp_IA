@@ -8,9 +8,13 @@
 using namespace std;
 using namespace lux;
 
-void WriteLog(string log, bool reset = true)
+void WriteLog(string log, bool reset = false)
 {
-  FILE *pFile = fopen("logFile.txt", "a");
+  FILE *pFile;
+  if (reset)
+    pFile = fopen("logFile.txt", "w");
+  else
+    pFile = fopen("logFile.txt", "a");
   fprintf(pFile, "%s\n", log.c_str());
   fclose(pFile);
 }
@@ -94,7 +98,7 @@ Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextTo
     for (int x = 0; x < gameMap.width; x++)
     {
       Cell *cell = gameMap.getCell(x, y);
-      if (cell->hasResource())
+      if (cell->hasResource() || cell->citytile != nullptr)
       {
         continue;
       }
@@ -128,6 +132,33 @@ Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextTo
   return closestEmptyTile;
 }
 
+vector<Position> setPosToAvoid(GameMap gameMap, Player player, bool avoidCity = false, bool avoidUnit = false)
+{
+  vector<Position> toAvoid = vector<Position>();
+  if (avoidCity)
+  {
+    for (int y = 0; y < gameMap.height; y++)
+    {
+      for (int x = 0; x < gameMap.width; x++)
+      {
+        Cell *cell = gameMap.getCell(x, y);
+        if (cell->citytile != nullptr)
+        {
+          toAvoid.push_back(cell->pos);
+        }
+      }
+    }
+  }
+  if (avoidUnit)
+  {
+    for (int i = 0; i < player.units.size(); i++)
+    {
+      toAvoid.push_back(player.units[i].pos);
+    }
+  }
+  return toAvoid;
+}
+
 // # # # # # # # # # # # # # # # # # # # #
 // Game functions please code above me =)
 // # # # # # # # # # # # # # # # # # # # #
@@ -155,6 +186,11 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           actions.push_back(it->second.citytiles[i].buildWorker());
       }
     }
+  }
+  vector<Position> vec = setPosToAvoid(gameMap, player, true, true);
+  for (size_t i = 0; i < vec.size(); i++)
+  {
+    WriteLog("p" + to_string(player.team) + " " + to_string(vec[i].x) + "_" + to_string(vec[i].y));
   }
 
   for (int i = 0; i < player.units.size(); i++)
@@ -191,15 +227,15 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           {
             if (i == 0 && ShouldBuildCity(unit) && city.fuel > 500)
             {
-              if (unit.canBuild(gameMap))
+              Cell *buildLocation = GetClosestEmptyTile(gameMap, unit, player, true);
+              WriteLog("p" + to_string(player.team) + " build to" + to_string(buildLocation->pos.x) + "_" + to_string(buildLocation->pos.y));
+              if (unit.canBuild(gameMap) && buildLocation->pos == unit.pos)
               {
                 actions.push_back(unit.buildCity());
               }
               else
               {
-                Cell *buildLocation = GetClosestEmptyTile(gameMap, unit, player);
-                // move to city
-                auto dir = unit.pos.directionTo(buildLocation->pos);
+                auto dir = unit.pos.directionTo(buildLocation->pos, setPosToAvoid(gameMap, player, true, false));
                 actions.push_back(unit.move(dir));
               }
             }
@@ -233,7 +269,7 @@ int main()
   kit::Agent gameState = kit::Agent();
   // initialize
   gameState.initialize();
-
+  WriteLog("newGame", true);
   while (true)
   {
     /** Do not edit! **/
@@ -243,6 +279,8 @@ int main()
     vector<string> actions = vector<string>();
 
     /** AI Code Goes Below! **/
+    WriteLog("# # # # # # # # # # # # # # # # # # # # ");
+    WriteLog("p" + to_string(gameState.id) + " " + "Turn " + to_string(gameState.turn));
 
     if (gameState.turn % 40 <= 25)
     {
