@@ -8,14 +8,11 @@
 using namespace std;
 using namespace lux;
 
-void WriteLog(string log, bool concat = true)
+void WriteLog(string log, bool reset = true)
 {
-  {
-
-    FILE *pFile = fopen("logFile.txt", "a");
-    fprintf(pFile, "%s\n", log);
-    fclose(pFile);
-  }
+  FILE *pFile = fopen("logFile.txt", "a");
+  fprintf(pFile, "%s\n", log.c_str());
+  fclose(pFile);
 }
 
 vector<Cell *> GetResourceTiles(GameMap gameMap)
