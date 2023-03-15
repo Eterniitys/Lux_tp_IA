@@ -71,7 +71,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           vector<Position> toAvoid;
           for (auto var : player.units)
             toAvoid.push_back(var.pos);
-          auto dir = unit.pos.directionTo(closestResourceTile->pos, toAvoid);
+          auto dir = unit.pos.directionTo(closestResourceTile->pos);
           actions.push_back(unit.move(dir));
         }
       }
@@ -196,7 +196,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
               vector<Position> toAvoid;
               for (auto var : player.units)
                 toAvoid.push_back(var.pos);
-              auto dir = unit.pos.directionTo(closestCityTile->pos, toAvoid);
+              auto dir = unit.pos.directionTo(closestCityTile->pos);
               actions.push_back(unit.move(dir));
             }
           }
