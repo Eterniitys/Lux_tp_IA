@@ -188,9 +188,14 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
     }
   }
   vector<Position> vec = setPosToAvoid(gameMap, player, true, true);
-  for (size_t i = 0; i < vec.size(); i++)
+  if (gameState.id == 0)
   {
-    WriteLog("p" + to_string(player.team) + " " + to_string(vec[i].x) + "_" + to_string(vec[i].y));
+    string ch = "P" + to_string(gameState.id);
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+      ch += " " + (string)vec[i];
+    }
+    WriteLog(ch);
   }
 
   for (int i = 0; i < player.units.size(); i++)
@@ -228,7 +233,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
             if (i == 0 && ShouldBuildCity(unit) && city.fuel > 500)
             {
               Cell *buildLocation = GetClosestEmptyTile(gameMap, unit, player, true);
-              WriteLog("p" + to_string(player.team) + " build to" + to_string(buildLocation->pos.x) + "_" + to_string(buildLocation->pos.y));
+              if (gameState.id == 0)
+                WriteLog("p" + to_string(player.team) + " build to" + (string)buildLocation->pos);
               if (unit.canBuild(gameMap) && buildLocation->pos == unit.pos)
               {
                 actions.push_back(unit.buildCity());
@@ -279,8 +285,12 @@ int main()
     vector<string> actions = vector<string>();
 
     /** AI Code Goes Below! **/
-    WriteLog("# # # # # # # # # # # # # # # # # # # # ");
-    WriteLog("p" + to_string(gameState.id) + " " + "Turn " + to_string(gameState.turn));
+    if (gameState.id == 0)
+    {
+
+      WriteLog("# # # # # # # # # # # # # # # # # # # # ");
+      WriteLog("p" + to_string(gameState.id) + " " + "Turn " + to_string(gameState.turn));
+    }
 
     if (gameState.turn % 40 <= 25)
     {
