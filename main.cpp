@@ -26,7 +26,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
     {
       if (it->second.citytiles[i].canAct())
       {
-        if (it->second.citytiles.size() < player.units.size())
+        if (it->second.citytiles.size() <= player.units.size())
           actions.push_back(it->second.citytiles[i].research());
         else
           actions.push_back(it->second.citytiles[i].buildWorker());
@@ -57,6 +57,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
         Cell *closestResourceTile;
         if (player.researchedCoal())
           closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::coal);
+        else if (player.researchedUranium() && i > 7)
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::uranium);
         else
           closestResourceTile = GetClosestResource(unit, resourceTiles, player);
 
