@@ -16,7 +16,7 @@ namespace lux
         int coal = 0;
         int uranium = 0;
 
-        Cargo(){}
+        Cargo() {}
         Cargo(int wood, int coal, int uranium) : wood(wood), coal(coal), uranium(uranium) {}
     };
 
@@ -32,12 +32,7 @@ namespace lux
 
         Unit(){};
         Unit(int teamid, int type, const string &unitid, int x, int y, int cooldown, int wood, int coal, int uranium)
-        : pos(x, y)
-        , team(teamid)
-        , id(unitid)
-        , type(type)
-        , cooldown(cooldown)
-        , cargo(wood, coal, uranium) {}
+            : pos(x, y), team(teamid), id(unitid), type(type), cooldown(cooldown), cargo(wood, coal, uranium) {}
 
         bool isWorker() const
         {
@@ -114,6 +109,12 @@ namespace lux
         string pillage() const
         {
             return "p " + id;
+        }
+
+        string moveTo(Position destination, vector<Position> toAvoid = {}) const
+        {
+            auto dir = pos.directionTo(destination);
+            return move(dir);
         }
     };
 
