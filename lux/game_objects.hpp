@@ -113,7 +113,7 @@ namespace lux
 
         string moveTo(Position destination, vector<Position> toAvoid = {}) const
         {
-            auto dir = pos.directionTo(destination);
+            auto dir = pos.directionTo(destination, toAvoid);
             return move(dir);
         }
     };

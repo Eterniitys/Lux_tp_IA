@@ -84,6 +84,7 @@ namespace lux
 
             DIRECTIONS closestDirection = DIRECTIONS::CENTER;
             float closestDist = distanceTo(targetPos);
+            string ch = "";
             for (const DIRECTIONS dir : ALL_DIRECTIONS)
             {
                 const Position newPos = translate(dir, 1);

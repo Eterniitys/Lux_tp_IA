@@ -88,7 +88,11 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
               }
               else
               {
-                actions.push_back(unit.moveTo(buildLocation->pos, MergeVecs(allCityTiles, unitsNextPos)));
+                auto nextPos = unit.moveTo(buildLocation->pos, MergeVecs(allCityTiles, unitsNextPos));
+                unitsNextPos.push_back(nextPos);
+
+                auto dir = unit.pos.directionTo(buildLocation->pos);
+                actions.push_back(unit.move(dir));
               }
             }
             else
