@@ -72,29 +72,49 @@ bool IsNextToCityTile(Unit unit, CityTile cityTile)
 
 Cell *GetBuildTile(GameMap gameMap, Unit unit, City city)
 {
+    // Check all the citytiles
+    // Check the first one to have an empty adjacent tile
+    // Return that citytile
     Cell *closestEmptyTile;
+    Cell *closestCityTileWithEmptyTile;
     CityTile *cityTile = GetClosestCityTile(unit, city);
     float closestDist = 9999999;
+    vector<CityTile> cityTileWithEmptyAdjacentTiles;
 
-    for (const DIRECTIONS dir : ALL_DIRECTIONS)
+    for (int i = 0; i < city.citytiles.size(); i++)
     {
-
-        Cell *cell = gameMap.getCellByPos(cityTile->pos.translate(dir, 1));
-        if (!cell->hasResource() && cell->citytile == nullptr)
+        for (const DIRECTIONS dir : ALL_DIRECTIONS)
         {
-            for (int i = 0; i < city.citytiles.size(); i++)
+            Cell *cell = gameMap.getCellByPos(city.citytiles[i].pos.translate(dir, 1));
+            if (!cell->hasResource() && cell->citytile == nullptr)
             {
-                float dist = cell->pos.distanceTo(unit.pos);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    closestEmptyTile = cell;
-                }
+                cityTileWithEmptyAdjacentTiles.push_back(city.citytiles[i]);
             }
         }
     }
+
+    for (int i = 0; i < cityTileWithEmptyAdjacentTiles.size(); i++)
+    {
+        float dist = cityTileWithEmptyAdjacentTiles[i].pos.distanceTo(unit.pos);
+        if (dist < closestDist)
+        {
+            closestCityTileWithEmptyTile = gameMap.getCellByPos(cityTileWithEmptyAdjacentTiles[i].pos);
+            closestDist = dist;
+        }
+    }
+
+    for (const DIRECTIONS dir : ALL_DIRECTIONS)
+    {
+        Cell *cell = gameMap.getCellByPos(closestCityTileWithEmptyTile->pos.translate(dir, 1));
+        if (!cell->hasResource() && cell->citytile == nullptr)
+        {
+            closestEmptyTile = cell;
+        }
+    }
+
     return closestEmptyTile;
 }
+
 Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextToCityTile = false)
 {
     Cell *closestEmptyTile;
