@@ -74,6 +74,7 @@ Cell *GetBuildTile(GameMap gameMap, Unit unit, City city)
 {
     Cell *closestEmptyTile;
     CityTile *cityTile = GetClosestCityTile(unit, city);
+    float closestDist = 9999999;
 
     for (const DIRECTIONS dir : ALL_DIRECTIONS)
     {
@@ -81,8 +82,15 @@ Cell *GetBuildTile(GameMap gameMap, Unit unit, City city)
         Cell *cell = gameMap.getCellByPos(cityTile->pos.translate(dir, 1));
         if (!cell->hasResource() && cell->citytile == nullptr)
         {
-            closestEmptyTile = cell;
-            break;
+            for (int i = 0; i < city.citytiles.size(); i++)
+            {
+                float dist = cell->pos.distanceTo(unit.pos);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestEmptyTile = cell;
+                }
+            }
         }
     }
     return closestEmptyTile;
