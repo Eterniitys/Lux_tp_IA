@@ -110,12 +110,6 @@ namespace lux
         {
             return "p " + id;
         }
-
-        Position moveTo(Position destination, vector<Position> toAvoid = {}) const
-        {
-            auto dir = pos.directionTo(destination, toAvoid);
-            return destination;
-        }
     };
 
     class Player

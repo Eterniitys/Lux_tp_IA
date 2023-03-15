@@ -20,15 +20,13 @@ vector<Cell *> GetResourceTiles(GameMap gameMap)
     return resourceTiles;
 }
 
-Cell *GetClosestResource(Unit unit, vector<Cell *> resourceTiles, Player player, ResourceType type = ResourceType::any)
+Cell *GetClosestResource(Unit unit, vector<Cell *> resourceTiles, Player player)
 {
     Cell *closestResourceTile;
     float closestDist = 9999999;
     for (auto it = resourceTiles.begin(); it != resourceTiles.end(); it++)
     {
         auto cell = *it;
-        if (type != ResourceType::any && cell->resource.type != type)
-            continue;
         if (cell->resource.type == ResourceType::coal && !player.researchedCoal())
             continue;
         if (cell->resource.type == ResourceType::uranium && !player.researchedUranium())
@@ -59,9 +57,9 @@ CityTile *GetClosestCityTile(Unit unit, City city)
     return closestCityTile;
 }
 
-bool ShouldBuildCity(Unit unit)
+bool ShouldBuildCity(Unit unit, City city)
 {
-    if ((unit.cargo.wood + unit.cargo.coal + unit.cargo.uranium) >= GAME_CONSTANTS["PARAMETERS"]["CITY_BUILD_COST"])
+    if ((unit.cargo.wood + unit.cargo.coal + unit.cargo.uranium) >= GAME_CONSTANTS["PARAMETERS"]["CITY_BUILD_COST"] && city.fuel > 500)
         return true;
     else
         return false;
