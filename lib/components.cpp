@@ -1,10 +1,7 @@
-#include "../lux/kit.hpp"
-#include "../lux/define.cpp"
-#include "tools.cpp"
-#include <string.h>
+#ifndef components_cpp
+#define components_cpp
+
 #include <vector>
-#include <set>
-#include <stdio.h>
 
 vector<Cell *> GetResourceTiles(GameMap gameMap)
 {
@@ -146,3 +143,5 @@ vector<T> MergeVecs(vector<T> vec1, vector<T> vec2)
     mergedVec.insert(mergedVec.end(), vec2.begin(), vec2.end());
     return mergedVec;
 }
+
+#endif

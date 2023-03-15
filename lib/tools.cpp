@@ -1,9 +1,5 @@
-#include "../lux/kit.hpp"
-#include "../lux/define.cpp"
-#include <string.h>
-#include <vector>
-#include <set>
-#include <stdio.h>
+#ifndef tools_cpp
+#define tools_cpp
 
 using namespace std;
 using namespace lux;
@@ -18,3 +14,5 @@ void WriteLog(string log, bool reset = false)
     fprintf(pFile, "%s\n", log.c_str());
     fclose(pFile);
 }
+
+#endif

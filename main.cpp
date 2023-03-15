@@ -3,7 +3,6 @@
 #include "lib/tools.cpp"
 #include "lib/components.cpp"
 #include <string.h>
-#include <vector>
 #include <set>
 #include <stdio.h>
 
@@ -63,7 +62,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 
         if (closestResourceTile != nullptr)
         {
-          actions.push_back(unit.moveTo(closestResourceTile->pos));
+          auto dir = unit.pos.directionTo(closestResourceTile->pos);
+          actions.push_back(unit.move(dir));
         }
       }
       else
@@ -97,7 +97,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
             }
             else
             {
-              actions.push_back(unit.moveTo(closestCityTile->pos));
+              auto dir = unit.pos.directionTo(closestCityTile->pos);
+              actions.push_back(unit.move(dir));
             }
           }
         }
