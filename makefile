@@ -2,7 +2,7 @@ all : run
 
 run:
 	g++ main.cpp -O3 -std=c++11 -o main.out
-	lux-ai-2021 main.out main.out --height 12 --width 12 --out=replay.json --seed 5000
+	lux-ai-2021 main.out main.out --height 12 --width 12 --out=replay.json --seed 23925337
 
 random:
 	g++ main.cpp -O3 -std=c++11 -o main.out

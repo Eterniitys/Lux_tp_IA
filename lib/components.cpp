@@ -70,38 +70,42 @@ bool IsNextToCityTile(Unit unit, CityTile cityTile)
     return unit.pos.distanceTo(cityTile.pos) == 1;
 }
 
+Cell *GetBuildTile(GameMap gameMap, Unit unit, City city)
+{
+    Cell *closestEmptyTile;
+    CityTile *cityTile = GetClosestCityTile(unit, city);
+
+    for (const DIRECTIONS dir : ALL_DIRECTIONS)
+    {
+
+        Cell *cell = gameMap.getCellByPos(cityTile->pos.translate(dir, 1));
+        if (!cell->hasResource() && cell->citytile == nullptr)
+        {
+            closestEmptyTile = cell;
+            break;
+        }
+    }
+    return closestEmptyTile;
+}
 Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextToCityTile = false)
 {
     Cell *closestEmptyTile;
     float closestDist = 9999999;
 
-    for (int y = 0; y < gameMap.height; y++)
+    if (nextToCityTile)
     {
-        for (int x = 0; x < gameMap.width; x++)
+    }
+    else
+    {
+        for (int y = 0; y < gameMap.height; y++)
         {
-            Cell *cell = gameMap.getCell(x, y);
-            if (cell->hasResource() || cell->citytile != nullptr)
+            for (int x = 0; x < gameMap.width; x++)
             {
-                continue;
-            }
-            if (nextToCityTile)
-            {
-                map<string, City>::iterator it;
-                for (it = player.cities.begin(); it != player.cities.end(); it++)
+                Cell *cell = gameMap.getCell(x, y);
+                if (cell->hasResource() || cell->citytile != nullptr)
                 {
-                    for (int i = 0; i < it->second.citytiles.size(); i++)
-                    {
-                        float dist = cell->pos.distanceTo(it->second.citytiles[i].pos);
-                        if (dist < closestDist)
-                        {
-                            closestDist = dist;
-                            closestEmptyTile = cell;
-                        }
-                    }
+                    continue;
                 }
-            }
-            else
-            {
                 float dist = cell->pos.distanceTo(unit.pos);
                 if (dist < closestDist)
                 {

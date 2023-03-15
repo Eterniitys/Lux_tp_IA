@@ -36,7 +36,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 
   vector<Position> allCityTiles = getAllCityTilesPos(gameMap);
   vector<Position> unitsNextPos = vector<Position>();
-  if (gameState.id == 0)
+  if (gameState.id == 1)
   {
     string ch = "P" + to_string(gameState.id);
     for (size_t i = 0; i < allCityTiles.size(); i++)
@@ -66,7 +66,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
 
         if (closestResourceTile != nullptr)
         {
-          if (gameState.id == 0)
+          if (gameState.id == 1)
             WriteLog(unit.id + " collect ressource -> " + (string)closestResourceTile->pos);
           auto dir = unit.pos.directionTo(closestResourceTile->pos);
           actions.push_back(unit.move(dir));
@@ -83,87 +83,116 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           closestCityTile = GetClosestCityTile(unit, city);
           if (closestCityTile != nullptr)
           {
-            if (gameState.id == 0)
+            if (gameState.id == 1)
               WriteLog(ShouldBuildCity(unit, city) ? "true" : "false");
-            // if (i == 0 && ShouldBuildCity(unit) && city.fuel > 500)
-            // {
-            //   Cell *buildLocation = GetClosestEmptyTile(gameMap, unit, player, true);
-            //   if (gameState.id == 0)
-            //     WriteLog("p" + to_string(player.team) + " build to" + (string)buildLocation->pos);
-            //   if (unit.canBuild(gameMap) && buildLocation->pos == unit.pos)
-            //   {
-            //     actions.push_back(unit.buildCity());
-            //   }
-            //   else
-            //   {
-            //     if (gameState.id == 0)
-            //       WriteLog("Want build here " + (string)buildLocation->pos);
-            //     // auto nextPos = unit.moveTo(buildLocation->pos, MergeVecs(allCityTiles, unitsNextPos));
-            //     // unitsNextPos.push_back(nextPos);
-            //     Position diff = Position(unit.pos.x - buildLocation->pos.x, unit.pos.y - buildLocation->pos.y);
-            //     if (gameState.id == 0)
-            //       WriteLog("diff ->" + (string)diff);
-            //     // x < 0 ; west
-            //     // x > 0 ; east
-            //     // y < 0 ; north
-            //     // y > 0 ; south
+            if (i == 0 && ShouldBuildCity(unit, city))
+            {
+              Cell *buildLocation = GetBuildTile(gameMap, unit, city);
+              if (gameState.id == 1)
+                WriteLog("Want build here " + (string)buildLocation->pos);
 
-            //     if (abs(diff.x) < abs(diff.y))
-            //     {
-            //       int sign = diff.y >= 0 ? 1 : -1;
-            //       Cell *cell = gameMap.getCellByPos(Position(unit.pos.x, unit.pos.y + sign));
-            //       if (cell->citytile == nullptr)
-            //       {
-            //         if (sign == 1)
-            //           // north
-            //           actions.push_back(unit.move(NORTH));
-            //         else
-            //           // south
-            //           actions.push_back(unit.move(SOUTH));
-            //       }
-            //       else
-            //       {
-            //         sign = diff.x >= 0 ? 1 : -1;
-            //         if (sign == 1)
-            //           // south
-            //           actions.push_back(unit.move(WEST));
-            //         else
-            //           // north
-            //           actions.push_back(unit.move(EAST));
-            //       }
-            //     }
-            //     else
-            //     {
-            //       int sign = diff.x >= 0 ? 1 : -1;
-            //       Cell *cell = gameMap.getCellByPos(Position(unit.pos.x, unit.pos.y + sign));
-            //       if (cell->citytile == nullptr)
-            //       {
-            //         if (sign == 1)
-            //           // south
-            //           actions.push_back(unit.move(WEST));
-            //         else
-            //           // north
-            //           actions.push_back(unit.move(EAST));
-            //       }
-            //       else
-            //       {
-            //         sign = diff.y >= 0 ? 1 : -1;
+              if (unit.canBuild(gameMap) && buildLocation->pos == unit.pos)
+              {
+                actions.push_back(unit.buildCity());
+              }
+              else
+              {
 
-            //         if (sign == 1)
-            //           // north
-            //           actions.push_back(unit.move(NORTH));
-            //         else
-            //           // south
-            //           actions.push_back(unit.move(SOUTH));
-            //       }
-            //     }
-            //   }
-            // }
-            // else
-            // {
-            auto dir = unit.pos.directionTo(closestCityTile->pos);
-            actions.push_back(unit.move(dir));
-            // }
+                // auto nextPos = unit.moveTo(buildLocation->pos, MergeVecs(allCityTiles, unitsNextPos));
+                // unitsNextPos.push_back(nextPos);
+                Position diff = Position(buildLocation->pos.x - unit.pos.x, buildLocation->pos.y - unit.pos.y);
+
+                // x < 0 ; west
+                // x > 0 ; east
+                // y < 0 ; north
+                // y > 0 ; south
+                string log = "diff ->" + (string)diff;
+                if (abs(diff.x) < abs(diff.y))
+                {
+                  int sign = diff.y > 0 ? 1 : -1;
+                  log += " s" + to_string(sign);
+                  Cell *cell = gameMap.getCellByPos(Position(unit.pos.x, unit.pos.y + sign));
+                  if (cell->citytile == nullptr)
+                  {
+                    if (sign == 1)
+                    {
+                      // south
+                      actions.push_back(unit.move(DIRECTIONS::SOUTH));
+                      log += "-> South";
+                    }
+                    else
+                    {
+                      // north
+                      actions.push_back(unit.move(DIRECTIONS::NORTH));
+                      log += "-> North";
+                    }
+                  }
+                  else
+                  {
+                    sign = diff.x > 0 ? 1 : -1;
+                    log += " s" + to_string(sign);
+
+                    if (sign == 1)
+                    {
+                      // east
+                      actions.push_back(unit.move(DIRECTIONS::EAST));
+                      log += "-> East";
+                    }
+                    else
+                    {
+                      // west
+                      actions.push_back(unit.move(DIRECTIONS::WEST));
+                      log += "-> West";
+                    }
+                  }
+                }
+                else
+                {
+                  int sign = diff.x > 0 ? 1 : -1;
+                  log += " s" + to_string(sign);
+                  Cell *cell = gameMap.getCellByPos(Position(unit.pos.x + sign, unit.pos.y));
+                  if (cell->citytile == nullptr)
+                  {
+                    if (sign == 1)
+                    {
+                      // east
+                      actions.push_back(unit.move(EAST));
+                      log += "-> East";
+                    }
+                    else
+                    {
+                      // west
+                      actions.push_back(unit.move(WEST));
+                      log += "-> West";
+                    }
+                  }
+                  else
+                  {
+                    sign = diff.y > 0 ? 1 : -1;
+                    log += " s" + to_string(sign);
+                    if (sign == 1)
+                    {
+                      // south
+                      actions.push_back(unit.move(SOUTH));
+                      log += "-> South";
+                    }
+                    else
+                    {
+                      // north
+                      actions.push_back(unit.move(NORTH));
+                      log += "-> North";
+                    }
+                  }
+                }
+                if (gameState.id == 1)
+                  WriteLog(log);
+              }
+            }
+            else
+            {
+              auto dir = unit.pos.directionTo(closestCityTile->pos);
+              actions.push_back(unit.move(dir));
+            }
           }
         }
       }
@@ -198,7 +227,7 @@ int main()
     vector<string> actions = vector<string>();
 
     /** AI Code Goes Below! **/
-    if (gameState.id == 0)
+    if (gameState.id == 1)
     {
 
       WriteLog("# # # # # # # # # # # # # # # # # # # # ");
