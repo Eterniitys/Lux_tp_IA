@@ -79,7 +79,7 @@ Cell *GetBuildTile(GameMap gameMap, Unit unit, City city)
     Cell *closestCityTileWithEmptyTile;
     CityTile *cityTile = GetClosestCityTile(unit, city);
     float closestDist = 9999999;
-    vector<CityTile> cityTileWithEmptyAdjacentTiles;
+    vector<Cell*> cityTileWithEmptyAdjacentTiles;
 
     for (int i = 0; i < city.citytiles.size(); i++)
     {
@@ -88,29 +88,29 @@ Cell *GetBuildTile(GameMap gameMap, Unit unit, City city)
             Cell *cell = gameMap.getCellByPos(city.citytiles[i].pos.translate(dir, 1));
             if (!cell->hasResource() && cell->citytile == nullptr)
             {
-                cityTileWithEmptyAdjacentTiles.push_back(city.citytiles[i]);
+                cityTileWithEmptyAdjacentTiles.push_back(cell);
             }
         }
     }
 
     for (int i = 0; i < cityTileWithEmptyAdjacentTiles.size(); i++)
     {
-        float dist = cityTileWithEmptyAdjacentTiles[i].pos.distanceTo(unit.pos);
+        float dist = cityTileWithEmptyAdjacentTiles[i]->pos.distanceTo(unit.pos);
         if (dist < closestDist)
         {
-            closestCityTileWithEmptyTile = gameMap.getCellByPos(cityTileWithEmptyAdjacentTiles[i].pos);
+            closestEmptyTile = cityTileWithEmptyAdjacentTiles[i];
             closestDist = dist;
         }
     }
 
-    for (const DIRECTIONS dir : ALL_DIRECTIONS)
-    {
-        Cell *cell = gameMap.getCellByPos(closestCityTileWithEmptyTile->pos.translate(dir, 1));
-        if (!cell->hasResource() && cell->citytile == nullptr)
-        {
-            closestEmptyTile = cell;
-        }
-    }
+    // for (const DIRECTIONS dir : ALL_DIRECTIONS)
+    // {
+    //     Cell *cell = gameMap.getCellByPos(closestCityTileWithEmptyTile->pos.translate(dir, 1));
+    //     if (!cell->hasResource() && cell->citytile == nullptr)
+    //     {
+    //         closestEmptyTile = cell;
+    //     }
+    // }
 
     return closestEmptyTile;
 }

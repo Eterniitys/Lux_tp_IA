@@ -26,7 +26,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
     {
       if (it->second.citytiles[i].canAct())
       {
-        if (it->second.citytiles.size() < player.units.size())
+        // if (it->second.citytiles.size() <= player.units.size())
           actions.push_back(it->second.citytiles[i].research());
         // else
         //   actions.push_back(it->second.citytiles[i].buildWorker());
@@ -68,7 +68,10 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
         {
           if (gameState.id == 1)
             WriteLog(unit.id + " collect ressource -> " + (string)closestResourceTile->pos);
-          auto dir = unit.pos.directionTo(closestResourceTile->pos);
+          vector<Position> toAvoid;
+          for (auto var : player.units)
+            toAvoid.push_back(var.pos);
+          auto dir = unit.pos.directionTo(closestResourceTile->pos, toAvoid);
           actions.push_back(unit.move(dir));
         }
       }
@@ -190,7 +193,10 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
             }
             else
             {
-              auto dir = unit.pos.directionTo(closestCityTile->pos);
+              vector<Position> toAvoid;
+              for (auto var : player.units)
+                toAvoid.push_back(var.pos);
+              auto dir = unit.pos.directionTo(closestCityTile->pos, toAvoid);
               actions.push_back(unit.move(dir));
             }
           }
