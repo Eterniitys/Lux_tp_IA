@@ -86,7 +86,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
         {
           if (gameState.id == 1)
             WriteLog(unit.id + " collect ressource -> " + (string)closestResourceTile->pos);
-          actions.push_back(GetBestPathTo(gameMap, unit, closestResourceTile->pos, true));
+          auto dir = unit.pos.directionTo(closestResourceTile->pos);
+          actions.push_back(unit.move(dir));
         }
       }
       else
@@ -114,108 +115,19 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
               }
               else
               {
-                actions.push_back(GetBestPathTo(gameMap, unit, buildLocation->pos, true));
+                actions.push_back(GetBestPathTo(gameMap, unit, buildLocation->pos));
               }
             }
             else
             {
-              actions.push_back(GetBestPathTo(gameMap, unit, closestCityTile->pos));
+              auto dir = unit.pos.directionTo(closestCityTile->pos);
+              actions.push_back(unit.move(dir));
             }
           }
         }
       }
     }
   }
-}
-
-string GetBestPathTo(GameMap gameMap, Unit unit, Position targetPos, bool avoidCity = false)
-{
-  Position diff = Position(targetPos.x - unit.pos.x, targetPos.y - unit.pos.y);
-
-  // x < 0 ; west
-  // x > 0 ; east
-  // y < 0 ; north
-  // y > 0 ; south
-  string log = "diff ->" + (string)diff;
-  if (abs(diff.x) < abs(diff.y))
-  {
-    int sign = diff.y > 0 ? 1 : -1;
-    log += " s" + to_string(sign);
-    Cell *cell = gameMap.getCellByPos(Position(unit.pos.x, unit.pos.y + sign));
-    if (cell->citytile == nullptr && !avoidCity)
-    {
-      if (sign == 1)
-      {
-        // south
-        return unit.move(DIRECTIONS::SOUTH);
-        log += "-> South";
-      }
-      else
-      {
-        // north
-        return unit.move(DIRECTIONS::NORTH);
-        log += "-> North";
-      }
-    }
-    else
-    {
-      sign = diff.x > 0 ? 1 : -1;
-      log += " s" + to_string(sign);
-
-      if (sign == 1)
-      {
-        // east
-        return unit.move(DIRECTIONS::EAST);
-        log += "-> East";
-      }
-      else
-      {
-        // west
-        return unit.move(DIRECTIONS::WEST);
-        log += "-> West";
-      }
-    }
-  }
-  else
-  {
-    int sign = diff.x > 0 ? 1 : -1;
-    log += " s" + to_string(sign);
-    Cell *cell = gameMap.getCellByPos(Position(unit.pos.x + sign, unit.pos.y));
-    if (cell->citytile == nullptr && !avoidCity)
-    {
-      if (sign == 1)
-      {
-        // east
-        return unit.move(EAST);
-        log += "-> East";
-      }
-      else
-      {
-        // west
-        return unit.move(WEST);
-        log += "-> West";
-      }
-    }
-    else
-    {
-      sign = diff.y > 0 ? 1 : -1;
-      log += " s" + to_string(sign);
-      if (sign == 1)
-      {
-        // south
-        return unit.move(SOUTH);
-        log += "-> South";
-      }
-      else
-      {
-        // north
-        return unit.move(NORTH);
-        log += "-> North";
-      }
-    }
-  }
-  if (unit.team == 1)
-    WriteLog(log);
 }
 
 void ActOnDawn(kit::Agent &gameState, vector<string> &actions)
