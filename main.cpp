@@ -26,10 +26,23 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
     {
       if (it->second.citytiles[i].canAct())
       {
-        // if (it->second.citytiles.size() <= player.units.size())
+        if (it->second.citytiles.size() <= player.units.size())
           actions.push_back(it->second.citytiles[i].research());
-        // else
-        //   actions.push_back(it->second.citytiles[i].buildWorker());
+        else
+        {
+          if (player.researchedCoal() && player.units.size() < 3)
+          {
+            actions.push_back(it->second.citytiles[i].buildWorker());
+          }
+          else if (player.researchedUranium() && player.units.size() < 4)
+          {
+            actions.push_back(it->second.citytiles[i].buildWorker());
+          }
+          else
+          {
+            actions.push_back(it->second.citytiles[i].research());
+          }
+        }
       }
     }
   }
@@ -62,15 +75,17 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
         // else if (player.researchedUranium() && i > 7)
         //   closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::uranium);
         // else
-        closestResourceTile = GetClosestResource(unit, resourceTiles, player);
+        if (i == 0)
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::wood);
+        else if (i == 1)
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::coal);
+        else
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::uranium);
 
         if (closestResourceTile != nullptr)
         {
           if (gameState.id == 1)
             WriteLog(unit.id + " collect ressource -> " + (string)closestResourceTile->pos);
-          vector<Position> toAvoid;
-          for (auto var : player.units)
-            toAvoid.push_back(var.pos);
           auto dir = unit.pos.directionTo(closestResourceTile->pos);
           actions.push_back(unit.move(dir));
         }
@@ -90,7 +105,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
               WriteLog(ShouldBuildCity(unit, city) ? "true" : "false");
             if (i == 0 && ShouldBuildCity(unit, city))
             {
-              Cell *buildLocation = GetBuildTile(gameMap, unit, city);
+              Cell *buildLocation = GetBuildTile(gameMap, unit, city, player);
               if (gameState.id == 1)
                 WriteLog("Want build here " + (string)buildLocation->pos);
 
@@ -193,9 +208,6 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
             }
             else
             {
-              vector<Position> toAvoid;
-              for (auto var : player.units)
-                toAvoid.push_back(var.pos);
               auto dir = unit.pos.directionTo(closestCityTile->pos);
               actions.push_back(unit.move(dir));
             }
