@@ -30,7 +30,11 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
           actions.push_back(it->second.citytiles[i].research());
         else
         {
-          if (player.researchedCoal() && player.units.size() < 3)
+          if (player.units.size() <= 0)
+          {
+            actions.push_back(it->second.citytiles[i].buildWorker());
+          }
+          else if (player.researchedCoal() && player.units.size() < 3)
           {
             actions.push_back(it->second.citytiles[i].buildWorker());
           }
@@ -70,11 +74,6 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
         Cell *closestResourceTile;
         vector<Cell *> resourceTiles = vector<Cell *>();
         resourceTiles = GetResourceTiles(gameMap);
-        // if (player.researchedCoal())
-        //   closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::coal);
-        // else if (player.researchedUranium() && i > 7)
-        //   closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::uranium);
-        // else
         if (i == 0)
           closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::wood);
         else if (i == 1)
@@ -100,12 +99,12 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
           auto &city = city_iter->second;
 
           CityTile *closestCityTile;
-          closestCityTile = GetClosestCityTile(unit, city);
+          closestCityTile = GetClosestCityTile(unit, player);
           if (closestCityTile != nullptr)
           {
             if (gameState.id == 1)
-              WriteLog(ShouldBuildCity(unit, city) ? "true" : "false");
-            if (i == 0 && ShouldBuildCity(unit, city) && !actOnDawn && !actOnNight)
+              WriteLog(ShouldBuildCity(unit, player) ? "true" : "false");
+            if (i == 0 && ShouldBuildCity(unit, player) && !actOnDawn && !actOnNight)
             {
               Cell *buildLocation = GetBuildTile(gameMap, unit, city, player);
               if (gameState.id == 1)
@@ -122,6 +121,10 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
             }
             else
             {
+              CityTile *closestCityTile;
+              closestCityTile = GetClosestCityTile(unit, player);
+              if (gameState.id == 1)
+                WriteLog("Return to Citytile " + (string)closestCityTile->pos);
               auto dir = unit.pos.directionTo(closestCityTile->pos);
               actions.push_back(unit.move(dir));
             }
