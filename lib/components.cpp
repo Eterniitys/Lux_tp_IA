@@ -43,28 +43,62 @@ Cell *GetClosestResource(Unit unit, vector<Cell *> resourceTiles, Player player,
     return closestResourceTile;
 }
 
-CityTile *GetClosestCityTile(Unit unit, City city)
+CityTile *GetClosestCityTile(Unit unit, Player player)
 {
+    CityTile *closestCityTile = nullptr;
     float closestDist = 999999;
-    CityTile *closestCityTile;
-    for (auto &citytile : city.citytiles)
+    float leastFuel = 999999;
+
+    // Find the city with the least amount of fuel
+    City *smallestCity = nullptr;
+    for (auto &cityPair : player.cities)
     {
-        float dist = citytile.pos.distanceTo(unit.pos);
+        if (cityPair.second.fuel < leastFuel)
+        {
+            smallestCity = &cityPair.second;
+            leastFuel = cityPair.second.fuel;
+        }
+    }
+
+    // If no cities have fuel, return null pointer
+    if (smallestCity == nullptr)
+    {
+        return nullptr;
+    }
+
+    // Find the closest city tile in the city with the least amount of fuel
+    for (auto &cityTile : smallestCity->citytiles)
+    {
+        float dist = cityTile.pos.distanceTo(unit.pos);
         if (dist < closestDist)
         {
-            closestCityTile = &citytile;
+            closestCityTile = &cityTile;
             closestDist = dist;
         }
     }
+
     return closestCityTile;
 }
 
-bool ShouldBuildCity(Unit unit, City city)
+bool ShouldBuildCity(Unit unit, Player player)
 {
-    if ((unit.cargo.wood + unit.cargo.coal + unit.cargo.uranium) >= GAME_CONSTANTS["PARAMETERS"]["CITY_BUILD_COST"] && city.fuel > (city.getLightUpkeep() * 10) + 150)
+    if (player.cities.size() <= 0)
         return true;
     else
-        return false;
+    {
+        bool hasEnoughStock = true;
+        for (const auto &cityPair : player.cities)
+        {
+            if (cityPair.second.fuel < (cityPair.second.getLightUpkeep() * 10) + 150)
+            {
+                hasEnoughStock = false;
+            }
+        }
+        if ((unit.cargo.wood + unit.cargo.coal + unit.cargo.uranium) >= GAME_CONSTANTS["PARAMETERS"]["CITY_BUILD_COST"] && hasEnoughStock)
+            return true;
+        else
+            return false;
+    }
 }
 
 bool IsNextToCityTile(Unit unit, CityTile cityTile)
@@ -105,50 +139,44 @@ Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextTo
 
 Cell *GetBuildTile(GameMap gameMap, Unit unit, City city, Player player)
 {
-    // Check all the citytiles
-    // Check the first one to have an empty adjacent tile
-    // Return that citytile
-    Cell *closestEmptyTile;
-    Cell *closestCityTileWithEmptyTile;
-    CityTile *cityTile = GetClosestCityTile(unit, city);
+    Cell *closestEmptyTile = nullptr;
     float closestDist = 9999999;
-    vector<Cell *> cityTileWithEmptyAdjacentTiles;
 
-    for (int i = 0; i < city.citytiles.size(); i++)
+    // Find all cells adjacent to all city tiles in all cities that are empty and have no citytile
+    vector<Cell *> emptyAdjacentCells;
+    for (const auto &cityPair : player.cities)
     {
-        for (const DIRECTIONS dir : ALL_DIRECTIONS)
+        for (const auto &cityTile : cityPair.second.citytiles)
         {
-            Cell *cell = gameMap.getCellByPos(city.citytiles[i].pos.translate(dir, 1));
-            if (!cell->hasResource() && cell->citytile == nullptr)
+            for (const auto dir : ALL_DIRECTIONS)
             {
-                cityTileWithEmptyAdjacentTiles.push_back(cell);
+                Cell *cell = gameMap.getCellByPos(cityTile.pos.translate(dir, 1));
+                if (!cell->hasResource() && !cell->citytile)
+                {
+                    emptyAdjacentCells.push_back(cell);
+                }
             }
         }
     }
 
-    if (cityTileWithEmptyAdjacentTiles.size() > 0)
+    // If there are any empty adjacent cells, find the closest one to the unit
+    if (!emptyAdjacentCells.empty())
     {
-        for (int i = 0; i < cityTileWithEmptyAdjacentTiles.size(); i++)
+        for (const auto &emptyAdjacentCell : emptyAdjacentCells)
         {
-            float dist = cityTileWithEmptyAdjacentTiles[i]->pos.distanceTo(unit.pos);
+            float dist = emptyAdjacentCell->pos.distanceTo(unit.pos);
             if (dist < closestDist)
             {
-                closestEmptyTile = cityTileWithEmptyAdjacentTiles[i];
+                closestEmptyTile = emptyAdjacentCell;
                 closestDist = dist;
             }
         }
     }
+    // Otherwise, find the closest empty cell on the map to the unit
     else
+    {
         closestEmptyTile = GetClosestEmptyTile(gameMap, unit, player);
-
-    // for (const DIRECTIONS dir : ALL_DIRECTIONS)
-    // {
-    //     Cell *cell = gameMap.getCellByPos(closestCityTileWithEmptyTile->pos.translate(dir, 1));
-    //     if (!cell->hasResource() && cell->citytile == nullptr)
-    //     {
-    //         closestEmptyTile = cell;
-    //     }
-    // }
+    }
 
     return closestEmptyTile;
 }
@@ -270,5 +298,6 @@ string GetBestPathTo(GameMap gameMap, Unit unit, Position targetPos)
     if (unit.team == 1)
         WriteLog(log);
 }
+
 
 #endif
