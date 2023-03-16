@@ -9,7 +9,7 @@
 using namespace std;
 using namespace lux;
 
-void ActOnDay(kit::Agent &gameState, vector<string> &actions)
+void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = false, bool actOnNight = false)
 {
   Player &player = gameState.players[gameState.id];
   Player &opponent = gameState.players[(gameState.id + 1) % 2];
@@ -79,6 +79,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::wood);
         else if (i == 1)
           closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::coal);
+        else if (i == 2)
+          closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::wood);
         else
           closestResourceTile = GetClosestResource(unit, resourceTiles, player, ResourceType::uranium);
 
@@ -103,7 +105,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions)
           {
             if (gameState.id == 1)
               WriteLog(ShouldBuildCity(unit, city) ? "true" : "false");
-            if (i == 0 && ShouldBuildCity(unit, city))
+            if (i == 0 && ShouldBuildCity(unit, city) && !actOnDawn && !actOnNight)
             {
               Cell *buildLocation = GetBuildTile(gameMap, unit, city, player);
               if (gameState.id == 1)
@@ -164,7 +166,7 @@ int main()
       WriteLog("p" + to_string(gameState.id) + " " + "Turn " + to_string(gameState.turn));
     }
 
-    if (gameState.turn % 40 <= 25)
+    if (gameState.turn % 40 <= 20)
     {
       ActOnDay(gameState, actions);
     }
