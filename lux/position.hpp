@@ -49,7 +49,7 @@ namespace lux
                 return Position(x, y + units);
             case DIRECTIONS::WEST:
                 return Position(x - units, y);
-            case DIRECTIONS::CENTER:
+            default:
                 return Position(x, y);
             }
         }
