@@ -53,14 +53,13 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
 
   vector<Position> allCityTiles = getAllCityTilesPos(gameMap);
   vector<Position> unitsNextPos = vector<Position>();
-  if (gameState.id == 1)
+
   {
     string ch = "P" + to_string(gameState.id);
     for (size_t i = 0; i < allCityTiles.size(); i++)
     {
       ch += " " + (string)allCityTiles[i];
     }
-    WriteLog(ch);
   }
 
   for (int i = 0; i < player.units.size(); i++)
@@ -85,8 +84,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
 
         if (closestResourceTile != nullptr)
         {
-          if (gameState.id == 1)
-            WriteLog(unit.id + " collect ressource -> " + (string)closestResourceTile->pos);
+
           auto dir = unit.pos.directionTo(closestResourceTile->pos);
           actions.push_back(unit.move(dir));
         }
@@ -102,13 +100,10 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
           closestCityTile = GetClosestCityTile(unit, player);
           if (closestCityTile != nullptr)
           {
-            if (gameState.id == 1)
-              WriteLog(ShouldBuildCity(unit, player) ? "true" : "false");
+
             if (i == 0 && ShouldBuildCity(unit, player) && !actOnDawn && !actOnNight)
             {
               Cell *buildLocation = GetBuildTile(gameMap, unit, city, player);
-              if (gameState.id == 1)
-                WriteLog("Want build here " + (string)buildLocation->pos);
 
               if (unit.canBuild(gameMap) && buildLocation->pos == unit.pos)
               {
@@ -123,8 +118,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
             {
               CityTile *closestCityTile;
               closestCityTile = GetClosestCityTile(unit, player);
-              if (gameState.id == 1)
-                WriteLog("Return to Citytile " + (string)closestCityTile->pos);
+
               auto dir = unit.pos.directionTo(closestCityTile->pos);
               actions.push_back(unit.move(dir));
             }
@@ -152,7 +146,7 @@ int main()
   kit::Agent gameState = kit::Agent();
   // initialize
   gameState.initialize();
-  WriteLog("newGame", true);
+
   while (true)
   {
     /** Do not edit! **/
@@ -162,12 +156,6 @@ int main()
     vector<string> actions = vector<string>();
 
     /** AI Code Goes Below! **/
-    if (gameState.id == 1)
-    {
-
-      WriteLog("# # # # # # # # # # # # # # # # # # # # ");
-      WriteLog("p" + to_string(gameState.id) + " " + "Turn " + to_string(gameState.turn));
-    }
 
     if (gameState.turn % 40 <= 20)
     {

@@ -295,9 +295,6 @@ string GetBestPathTo(GameMap gameMap, Unit unit, Position targetPos)
             }
         }
     }
-    if (unit.team == 1)
-        WriteLog(log);
 }
-
 
 #endif
