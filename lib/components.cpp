@@ -3,6 +3,7 @@
 
 #include <vector>
 
+// Get all the ressources on the map.
 vector<Cell *> GetResourceTiles(GameMap gameMap)
 {
     vector<Cell *> resourceTiles = vector<Cell *>();
@@ -20,6 +21,7 @@ vector<Cell *> GetResourceTiles(GameMap gameMap)
     return resourceTiles;
 }
 
+// Get the closest (random or specific) ressource next to the unit.
 Cell *GetClosestResource(Unit unit, vector<Cell *> resourceTiles, Player player, ResourceType type = ResourceType::any)
 {
     Cell *closestResourceTile;
@@ -82,10 +84,12 @@ CityTile *GetClosestCityTile(Unit unit, Player player)
 
 bool ShouldBuildCity(Unit unit, Player player)
 {
+    // if there is no city, the unit should build a city
     if (player.cities.size() <= 0)
         return true;
     else
     {
+        // check if each city has enough fuel for the night cycle with a 150 margin.
         bool hasEnoughStock = true;
         for (const auto &cityPair : player.cities)
         {
@@ -94,6 +98,7 @@ bool ShouldBuildCity(Unit unit, Player player)
                 hasEnoughStock = false;
             }
         }
+        // check if the unit also has enough ressources on it.
         if ((unit.cargo.wood + unit.cargo.coal + unit.cargo.uranium) >= GAME_CONSTANTS["PARAMETERS"]["CITY_BUILD_COST"] && hasEnoughStock)
             return true;
         else
@@ -101,36 +106,31 @@ bool ShouldBuildCity(Unit unit, Player player)
     }
 }
 
+// Check if the CityTile is adjacent to the unit.
 bool IsNextToCityTile(Unit unit, CityTile cityTile)
 {
     return unit.pos.distanceTo(cityTile.pos) == 1;
 }
 
-Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player, bool nextToCityTile = false)
+// Return the closest empty cell next to the unit.
+Cell *GetClosestEmptyTile(GameMap gameMap, Unit unit, Player player)
 {
     Cell *closestEmptyTile;
     float closestDist = 9999999;
-
-    if (nextToCityTile)
+    for (int y = 0; y < gameMap.height; y++)
     {
-    }
-    else
-    {
-        for (int y = 0; y < gameMap.height; y++)
+        for (int x = 0; x < gameMap.width; x++)
         {
-            for (int x = 0; x < gameMap.width; x++)
+            Cell *cell = gameMap.getCell(x, y);
+            if (cell->hasResource() || cell->citytile != nullptr)
             {
-                Cell *cell = gameMap.getCell(x, y);
-                if (cell->hasResource() || cell->citytile != nullptr)
-                {
-                    continue;
-                }
-                float dist = cell->pos.distanceTo(unit.pos);
-                if (dist < closestDist)
-                {
-                    closestDist = dist;
-                    closestEmptyTile = cell;
-                }
+                continue;
+            }
+            float dist = cell->pos.distanceTo(unit.pos);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closestEmptyTile = cell;
             }
         }
     }
@@ -181,6 +181,7 @@ Cell *GetBuildTile(GameMap gameMap, Unit unit, City city, Player player)
     return closestEmptyTile;
 }
 
+// Function to get the positions of all city tiles on the game map
 vector<Position> getAllCityTilesPos(GameMap gameMap)
 {
     vector<Position> tiles = vector<Position>();
@@ -199,6 +200,7 @@ vector<Position> getAllCityTilesPos(GameMap gameMap)
     return tiles;
 }
 
+// Function to merge two vectors of type T
 template <typename T>
 vector<T> MergeVecs(vector<T> vec1, vector<T> vec2)
 {
@@ -211,15 +213,20 @@ vector<T> MergeVecs(vector<T> vec1, vector<T> vec2)
 
 string GetBestPathTo(GameMap gameMap, Unit unit, Position targetPos)
 {
+    // Calculate the difference between the unit's current position and the target position.
     Position diff = Position(targetPos.x - unit.pos.x, targetPos.y - unit.pos.y);
 
     // x < 0 ; west
     // x > 0 ; east
     // y < 0 ; north
     // y > 0 ; south
+
     string log = "diff ->" + (string)diff;
+
+    // If the difference in the x-coordinate is smaller than the difference in the y-coordinate:
     if (abs(diff.x) < abs(diff.y))
     {
+        // calculate the sign of the difference in the y-coordinate.
         int sign = diff.y > 0 ? 1 : -1;
         log += " s" + to_string(sign);
         Cell *cell = gameMap.getCellByPos(Position(unit.pos.x, unit.pos.y + sign));
@@ -240,6 +247,7 @@ string GetBestPathTo(GameMap gameMap, Unit unit, Position targetPos)
         }
         else
         {
+            // calculate the sign of the difference in the x-coordinate.
             sign = diff.x > 0 ? 1 : -1;
             log += " s" + to_string(sign);
 
@@ -257,6 +265,7 @@ string GetBestPathTo(GameMap gameMap, Unit unit, Position targetPos)
             }
         }
     }
+    // If the difference in the y-coordinate is smaller than the difference in the x-coordinate:
     else
     {
         int sign = diff.x > 0 ? 1 : -1;

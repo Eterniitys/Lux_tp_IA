@@ -20,6 +20,8 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
   resourceTiles = GetResourceTiles(gameMap);
 
   map<string, City>::iterator it;
+
+  // We iterate in each city to research or create workers when certain conditions are met :
   for (it = player.cities.begin(); it != player.cities.end(); it++)
   {
     for (int i = 0; i < it->second.citytiles.size(); i++)
@@ -96,11 +98,14 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
           auto city_iter = player.cities.begin();
           auto &city = city_iter->second;
 
+          // Get the closest CityTile
           CityTile *closestCityTile;
           closestCityTile = GetClosestCityTile(unit, player);
+
           if (closestCityTile != nullptr)
           {
 
+            // If the worker can build : 
             if (i == 0 && ShouldBuildCity(unit, player) && !actOnDawn && !actOnNight)
             {
               Cell *buildLocation = GetBuildTile(gameMap, unit, city, player);
@@ -114,6 +119,7 @@ void ActOnDay(kit::Agent &gameState, vector<string> &actions, bool actOnDawn = f
                 actions.push_back(GetBestPathTo(gameMap, unit, buildLocation->pos));
               }
             }
+            // else the unit go back to deposit its ressources to the closest city.
             else
             {
               CityTile *closestCityTile;
@@ -157,6 +163,7 @@ int main()
 
     /** AI Code Goes Below! **/
 
+    // Check the cycle we're in (day, dawn, night)
     if (gameState.turn % 40 <= 20)
     {
       ActOnDay(gameState, actions);
